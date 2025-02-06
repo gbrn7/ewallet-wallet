@@ -107,3 +107,24 @@ func (s *WalletService) GetBalance(ctx context.Context, userID uint64) (models.B
 
 	return resp, nil
 }
+
+func (s *WalletService) GetWalletHistory(ctx context.Context, userID uint64, param models.WalletHistoryParam) ([]models.WalletTransaction, error) {
+	var (
+		resp []models.WalletTransaction
+	)
+
+	wallet, err := s.WalletRepo.GetWalletByUserID(ctx, userID)
+	if err != nil {
+		return resp, errors.Wrap(err, "failed to get wallet")
+	}
+
+	offset := (param.Page - 1) * param.Limit
+
+	resp, err = s.WalletRepo.GetWalletHistory(ctx, wallet.ID, offset, param.Limit, param.WalletTransactionType)
+
+	if err != nil {
+		return resp, errors.Wrap(err, "failed to get wallet history")
+	}
+
+	return resp, nil
+}

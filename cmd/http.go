@@ -24,6 +24,7 @@ func ServeHttp() {
 	walletV1.PUT("/balance/credit", d.MiddlewareValidateToken, d.WalletAPI.CreditBalance)
 	walletV1.PUT("/balance/debit", d.MiddlewareValidateToken, d.WalletAPI.DebitBalance)
 	walletV1.GET("/balance", d.MiddlewareValidateToken, d.WalletAPI.GetBalance)
+	walletV1.GET("/history", d.MiddlewareValidateToken, d.WalletAPI.GetWalletHistory)
 
 	err := r.Run(":" + helpers.GetEnv("PORT", ""))
 	if err != nil {

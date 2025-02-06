@@ -15,15 +15,21 @@ func (*Wallet) TableName() string {
 }
 
 type WalletTransaction struct {
-	ID                    int
-	WalletID              int     `gorm:"column:wallet_id"`
-	Amount                float64 `gorm:"column:amount;type:decimal(15,2)"`
-	WalletTransactionType string  `gorm:"column:wallet_transaction_type;type:enum('CREDIT', 'DEBIT')"`
-	Reference             string  `gorm:"column:reference;type:varchar(100);unique"`
-	CreatedAt             time.Time
-	UpdatedAt             time.Time
+	ID                    int       `json:"-"`
+	WalletID              int       `json:"Wallet_ID" gorm:"column:wallet_id"`
+	Amount                float64   `json:"amount" gorm:"column:amount;type:decimal(15,2)"`
+	WalletTransactionType string    `json:"wallet_transaction_type" gorm:"column:wallet_transaction_type;type:enum('CREDIT', 'DEBIT')"`
+	Reference             string    `json:"reference" gorm:"column:reference;type:varchar(100);unique"`
+	CreatedAt             time.Time `json:"date"`
+	UpdatedAt             time.Time `json:"-"`
 }
 
 func (*WalletTransaction) TableName() string {
 	return "wallet_transactions"
+}
+
+type WalletHistoryParam struct {
+	Page                  int    `form:"page"`
+	Limit                 int    `form:"limit"`
+	WalletTransactionType string `form:"wallet_transaction_type"`
 }
