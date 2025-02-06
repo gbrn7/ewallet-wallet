@@ -76,7 +76,7 @@ func (api *WalletAPI) CreditBalance(c *gin.Context) {
 
 	resp, err := api.WalletService.CreditBalance(c.Request.Context(), tokenData.UserID, req)
 	if err != nil {
-		log.Error("failed to create wallet:", err)
+		log.Error("failed to debit balance of wallet:", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -118,7 +118,36 @@ func (api *WalletAPI) DebitBalance(c *gin.Context) {
 
 	resp, err := api.WalletService.DebitBalance(c.Request.Context(), tokenData.UserID, req)
 	if err != nil {
-		log.Error("failed to create wallet:", err)
+		log.Error("failed to debit of wallet :", err)
+		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
+		return
+	}
+
+	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, resp)
+}
+
+func (api *WalletAPI) GetBalance(c *gin.Context) {
+	var (
+		log = helpers.Logger
+	)
+
+	token, ok := c.Get("token")
+	if !ok {
+		log.Error("failed to get token data:")
+		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
+		return
+	}
+
+	tokenData, ok := token.(models.TokenData)
+	if !ok {
+		log.Error("failed to parse token data:")
+		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
+		return
+	}
+
+	resp, err := api.WalletService.GetBalance(c.Request.Context(), tokenData.UserID)
+	if err != nil {
+		log.Error("failed to get balance of wallet:", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
