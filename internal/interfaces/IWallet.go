@@ -17,9 +17,11 @@ type IWalletRepo interface {
 type IWalletService interface {
 	Create(ctx context.Context, wallet *models.Wallet) error
 	CreditBalance(ctx context.Context, userID uint64, req models.TransactionRequest) (models.TransactionResponse, error)
+	DebitBalance(ctx context.Context, userID uint64, req models.TransactionRequest) (models.TransactionResponse, error)
 }
 
 type IWalletAPI interface {
 	Create(*gin.Context)
 	CreditBalance(c *gin.Context)
+	DebitBalance(c *gin.Context)
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"ewallet-wallet/external"
 	"ewallet-wallet/helpers"
 	"ewallet-wallet/internal/api"
 	"ewallet-wallet/internal/interfaces"
@@ -21,6 +22,7 @@ func ServeHttp() {
 	walletV1 := r.Group("/wallet/v1")
 	walletV1.POST("/", d.WalletAPI.Create)
 	walletV1.PUT("/credit", d.MiddlewareValidateToken, d.WalletAPI.CreditBalance)
+	walletV1.PUT("/debit", d.MiddlewareValidateToken, d.WalletAPI.DebitBalance)
 
 	err := r.Run(":" + helpers.GetEnv("PORT", ""))
 	if err != nil {
@@ -31,6 +33,7 @@ func ServeHttp() {
 type Dependency struct {
 	HealthcheckAPI interfaces.IHealthcheckAPI
 	WalletAPI      interfaces.IWalletAPI
+	External       interfaces.IExternal
 }
 
 func dependencyInject() Dependency {
@@ -51,8 +54,11 @@ func dependencyInject() Dependency {
 		WalletService: walletSvc,
 	}
 
+	external := &external.External{}
+
 	return Dependency{
 		HealthcheckAPI: healthcheckAPI,
 		WalletAPI:      walletAPI,
+		External:       external,
 	}
 }
