@@ -1,75 +1,34 @@
 package cmd
 
-// func (d *Dependency) MiddlewareValidateAuth(ctx *gin.Context) {
-// 	auth := ctx.Request.Header.Get("Authorization")
-// 	if auth == "" {
-// 		log.Println("authorization empty")
-// 		helpers.SendResponseHTTP(ctx, http.StatusUnauthorized, "unauthorized", nil)
-// 		ctx.Abort()
-// 		return
-// 	}
+import (
+	"ewallet-wallet/external"
+	"ewallet-wallet/helpers"
+	"net/http"
 
-// 	_, err := d.UserRepository.GetUserSessionByToken(ctx.Request.Context(), auth)
-// 	if err != nil {
-// 		log.Println("failed to get user session on DB: ", err)
-// 		helpers.SendResponseHTTP(ctx, http.StatusUnauthorized, "unauthorized", nil)
-// 		ctx.Abort()
-// 		return
-// 	}
+	"github.com/gin-gonic/gin"
+)
 
-// 	claim, err := helpers.ValidateToken(ctx.Request.Context(), auth)
-// 	if err != nil {
-// 		log.Println(err)
-// 		helpers.SendResponseHTTP(ctx, http.StatusUnauthorized, "unauthorized", nil)
-// 		ctx.Abort()
-// 		return
-// 	}
+func (d *Dependency) MiddlewareValidateToken(c *gin.Context) {
+	var (
+		log = helpers.Logger
+	)
+	auth := c.Request.Header.Get("Authorization")
+	if auth == "" {
+		log.Println("authorization empty")
+		helpers.SendResponseHTTP(c, http.StatusUnauthorized, "unauthorized", nil)
+		c.Abort()
+		return
+	}
 
-// 	if time.Now().Unix() > claim.ExpiresAt.Unix() {
-// 		log.Println("jwt token is expired: ", claim.ExpiresAt)
-// 		helpers.SendResponseHTTP(ctx, http.StatusUnauthorized, "unauthorized", nil)
-// 		ctx.Abort()
-// 		return
-// 	}
+	tokenData, err := external.ValidateToken(c.Request.Context(), auth)
+	if err != nil {
+		log.Error(err)
+		helpers.SendResponseHTTP(c, http.StatusUnauthorized, "unauthorized", nil)
+		c.Abort()
 
-// 	ctx.Set("token", claim)
+	}
 
-// 	ctx.Next()
-// }
+	c.Set("token", tokenData)
 
-// func (d *Dependency) MiddlewareRefreshToken(ctx *gin.Context) {
-// 	auth := ctx.Request.Header.Get("Authorization")
-// 	if auth == "" {
-// 		log.Println("authorization empty")
-// 		helpers.SendResponseHTTP(ctx, http.StatusUnauthorized, "unauthorized", nil)
-// 		ctx.Abort()
-// 		return
-// 	}
-
-// 	_, err := d.UserRepository.GetUserSessionByRefreshToken(ctx.Request.Context(), auth)
-// 	if err != nil {
-// 		log.Println("failed to get user session on DB: ", err)
-// 		helpers.SendResponseHTTP(ctx, http.StatusUnauthorized, "unauthorized", nil)
-// 		ctx.Abort()
-// 		return
-// 	}
-
-// 	claim, err := helpers.ValidateToken(ctx.Request.Context(), auth)
-// 	if err != nil {
-// 		log.Println(err)
-// 		helpers.SendResponseHTTP(ctx, http.StatusUnauthorized, "unauthorized", nil)
-// 		ctx.Abort()
-// 		return
-// 	}
-
-// 	if time.Now().Unix() > claim.ExpiresAt.Unix() {
-// 		log.Println("jwt token is expired: ", claim.ExpiresAt)
-// 		helpers.SendResponseHTTP(ctx, http.StatusUnauthorized, "unauthorized", nil)
-// 		ctx.Abort()
-// 		return
-// 	}
-
-// 	ctx.Set("token", claim)
-
-// 	ctx.Next()
-// }
+	c.Next()
+}
