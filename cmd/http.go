@@ -26,6 +26,13 @@ func ServeHttp() {
 	walletV1.GET("/balance", d.MiddlewareValidateToken, d.WalletAPI.GetBalance)
 	walletV1.GET("/history", d.MiddlewareValidateToken, d.WalletAPI.GetWalletHistory)
 
+	exWalletv1 := walletV1.Group("/ex")
+	exWalletv1.Use(d.MiddlewareSignatureValidation)
+	exWalletv1.POST("/link", d.WalletAPI.CreateWalletLink)
+	exWalletv1.PUT("/link/:wallet_id/confirmation", d.WalletAPI.WalletLinkConfirmation)
+	exWalletv1.DELETE("/:wallet_id/unlink", d.WalletAPI.WalletUnlink)
+	exWalletv1.GET("/:wallet_id/balance", d.WalletAPI.ExGetBalance)
+
 	err := r.Run(":" + helpers.GetEnv("PORT", ""))
 	if err != nil {
 		log.Fatal(err)

@@ -14,6 +14,11 @@ type IWalletRepo interface {
 	GetWalletTransactionByReference(ctx context.Context, reference string) (models.WalletTransaction, error)
 	GetWalletByUserID(ctx context.Context, userID uint64) (models.Wallet, error)
 	GetWalletHistory(ctx context.Context, walletID int, offset int, limit int, transactionType string) ([]models.WalletTransaction, error)
+	GetWalletByID(ctx context.Context, walletID int) (models.Wallet, error)
+
+	InsertWalletLink(ctx context.Context, req *models.WalletLink) error
+	GetWalletLink(ctx context.Context, walletID int, clientSource string) (models.WalletLink, error)
+	UpdateStatusWalletLink(ctx context.Context, walletID int, clientSource string, status string) error
 }
 
 type IWalletService interface {
@@ -22,6 +27,11 @@ type IWalletService interface {
 	DebitBalance(ctx context.Context, userID uint64, req models.TransactionRequest) (models.BalanceResponse, error)
 	GetBalance(ctx context.Context, userID uint64) (models.BalanceResponse, error)
 	GetWalletHistory(ctx context.Context, userID uint64, param models.WalletHistoryParam) ([]models.WalletTransaction, error)
+	ExGetBalance(ctx context.Context, walletID int) (models.BalanceResponse, error)
+
+	CreateWalletLink(ctx context.Context, clientSource string, req *models.WalletLink) (models.WalletStructOTP, error)
+	WalletLinkConfirmation(ctx context.Context, walletID int, clientSource string, otp string) error
+	WalletUnlink(ctx context.Context, walletID int, clientSource string) error
 }
 
 type IWalletAPI interface {
@@ -30,4 +40,9 @@ type IWalletAPI interface {
 	DebitBalance(c *gin.Context)
 	GetBalance(c *gin.Context)
 	GetWalletHistory(c *gin.Context)
+	ExGetBalance(c *gin.Context)
+
+	CreateWalletLink(c *gin.Context)
+	WalletLinkConfirmation(c *gin.Context)
+	WalletUnlink(c *gin.Context)
 }

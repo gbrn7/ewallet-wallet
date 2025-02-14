@@ -75,3 +75,33 @@ func (r *WalletRepo) GetWalletHistory(ctx context.Context, walletID int, offset 
 
 	return resp, err
 }
+
+func (r *WalletRepo) InsertWalletLink(ctx context.Context, req *models.WalletLink) error {
+	return r.DB.Create(req).Error
+}
+
+func (r *WalletRepo) GetWalletLink(ctx context.Context, walletID int, clientSource string) (models.WalletLink, error) {
+	var (
+		resp models.WalletLink
+		err  error
+	)
+
+	err = r.DB.Where("wallet_id = ?", walletID).Where("client_source = ?", clientSource).First(&resp).Error
+
+	return resp, err
+}
+
+func (r *WalletRepo) UpdateStatusWalletLink(ctx context.Context, walletID int, clientSource string, status string) error {
+
+	return r.DB.Exec("UPDATE wallet_links SET status = ? WHERE wallet_id = ? AND client_source = ?", status, walletID, clientSource).Error
+}
+
+func (r *WalletRepo) GetWalletByID(ctx context.Context, walletID int) (models.Wallet, error) {
+	var (
+		resp models.Wallet
+	)
+
+	err := r.DB.Where("id = ?", walletID).Last(&resp).Error
+
+	return resp, err
+}
