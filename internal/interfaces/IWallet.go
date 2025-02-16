@@ -19,6 +19,7 @@ type IWalletRepo interface {
 	InsertWalletLink(ctx context.Context, req *models.WalletLink) error
 	GetWalletLink(ctx context.Context, walletID int, clientSource string) (models.WalletLink, error)
 	UpdateStatusWalletLink(ctx context.Context, walletID int, clientSource string, status string) error
+	UpdateBalanceByID(ctx context.Context, walletID int, amount float64) (models.Wallet, error)
 }
 
 type IWalletService interface {
@@ -32,6 +33,7 @@ type IWalletService interface {
 	CreateWalletLink(ctx context.Context, clientSource string, req *models.WalletLink) (models.WalletStructOTP, error)
 	WalletLinkConfirmation(ctx context.Context, walletID int, clientSource string, otp string) error
 	WalletUnlink(ctx context.Context, walletID int, clientSource string) error
+	ExternalTransaction(ctx context.Context, req models.ExternalTransactionRequest) (models.BalanceResponse, error)
 }
 
 type IWalletAPI interface {
@@ -45,4 +47,5 @@ type IWalletAPI interface {
 	CreateWalletLink(c *gin.Context)
 	WalletLinkConfirmation(c *gin.Context)
 	WalletUnlink(c *gin.Context)
+	ExternalTransaction(c *gin.Context)
 }

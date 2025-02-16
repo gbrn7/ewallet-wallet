@@ -32,6 +32,7 @@ func ServeHttp() {
 	exWalletv1.PUT("/link/:wallet_id/confirmation", d.WalletAPI.WalletLinkConfirmation)
 	exWalletv1.DELETE("/:wallet_id/unlink", d.WalletAPI.WalletUnlink)
 	exWalletv1.GET("/:wallet_id/balance", d.WalletAPI.ExGetBalance)
+	exWalletv1.POST("/transaction", d.WalletAPI.ExternalTransaction)
 
 	err := r.Run(":" + helpers.GetEnv("PORT", ""))
 	if err != nil {
