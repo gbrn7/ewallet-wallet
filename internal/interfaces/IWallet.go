@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//go:generate mockgen -source=IWallet.go -destination=../services/wallet_mock_test.go -package=services
 type IWalletRepo interface {
 	CreateWallet(ctx context.Context, wallet *models.Wallet) error
 	UpdateBalance(ctx context.Context, userID uint64, amount float64) (models.Wallet, error)
