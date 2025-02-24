@@ -850,7 +850,7 @@ func TestWalletRepo_GetWalletLink(t *testing.T) {
 			},
 		},
 		{
-			name: "errpr",
+			name: "error",
 			args: args{
 				ctx:          context.Background(),
 				walletID:     1,
