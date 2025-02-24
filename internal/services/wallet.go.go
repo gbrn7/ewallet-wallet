@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"ewallet-wallet/internal/interfaces"
+	"ewallet-wallet/internal/interfaces/i_repository"
 	"ewallet-wallet/internal/models"
 	"fmt"
 	"math/rand"
@@ -13,7 +13,7 @@ import (
 )
 
 type WalletService struct {
-	WalletRepo interfaces.IWalletRepo
+	WalletRepo i_repository.IWalletRepo
 }
 
 func (s *WalletService) Create(ctx context.Context, wallet *models.Wallet) error {
@@ -147,21 +147,21 @@ func (s *WalletService) GetWalletHistory(ctx context.Context, userID uint64, par
 	return resp, nil
 }
 
-func (s *WalletService) CreateWalletLink(ctx context.Context, clientSource string, req *models.WalletLink) (models.WalletStructOTP, error) {
+func (s *WalletService) CreateWalletLink(ctx context.Context, clientSource string, req *models.WalletLink) (*models.WalletStructOTP, error) {
 	req.ClientSource = clientSource
 	req.Status = "pending"
 	req.OTP = strconv.Itoa(rand.Intn(999999))
+
+	err := s.WalletRepo.InsertWalletLink(ctx, req)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to insert wallet link")
+	}
 
 	resp := models.WalletStructOTP{
 		OTP: req.OTP,
 	}
 
-	err := s.WalletRepo.InsertWalletLink(ctx, req)
-	if err != nil {
-		return resp, errors.Wrap(err, "failed to insert wallet link")
-	}
-
-	return resp, nil
+	return &resp, nil
 }
 
 func (s *WalletService) WalletLinkConfirmation(ctx context.Context, walletID int, clientSource string, otp string) error {

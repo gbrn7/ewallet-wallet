@@ -5,6 +5,7 @@ import (
 	"ewallet-wallet/helpers"
 	"ewallet-wallet/internal/api"
 	"ewallet-wallet/internal/interfaces"
+	"ewallet-wallet/internal/interfaces/i_api"
 	"ewallet-wallet/internal/repository"
 	"ewallet-wallet/internal/services"
 	"log"
@@ -42,7 +43,7 @@ func ServeHttp() {
 
 type Dependency struct {
 	HealthcheckAPI interfaces.IHealthcheckAPI
-	WalletAPI      interfaces.IWalletAPI
+	WalletAPI      i_api.IWalletAPI
 	External       interfaces.IExternal
 }
 

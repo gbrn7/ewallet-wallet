@@ -3,7 +3,7 @@ package api
 import (
 	"ewallet-wallet/constants"
 	"ewallet-wallet/helpers"
-	"ewallet-wallet/internal/interfaces"
+	"ewallet-wallet/internal/interfaces/i_service"
 	"ewallet-wallet/internal/models"
 	"net/http"
 	"strconv"
@@ -12,7 +12,7 @@ import (
 )
 
 type WalletAPI struct {
-	WalletService interfaces.IWalletService
+	WalletService i_service.IWalletService
 }
 
 func (api *WalletAPI) Create(c *gin.Context) {
@@ -233,7 +233,7 @@ func (api *WalletAPI) CreateWalletLink(c *gin.Context) {
 		return
 	}
 
-	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, resp)
+	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, &resp)
 }
 
 func (api *WalletAPI) WalletLinkConfirmation(c *gin.Context) {
