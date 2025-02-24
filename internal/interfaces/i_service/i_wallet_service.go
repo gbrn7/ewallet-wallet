@@ -5,6 +5,7 @@ import (
 	"ewallet-wallet/internal/models"
 )
 
+//go:generate mockgen -source=i_wallet_service.go -destination=../../api/api_mock_test.go -package=api
 type IWalletService interface {
 	Create(ctx context.Context, wallet *models.Wallet) error
 	CreditBalance(ctx context.Context, userID uint64, req models.TransactionRequest) (models.BalanceResponse, error)

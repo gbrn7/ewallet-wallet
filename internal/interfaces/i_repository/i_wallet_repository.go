@@ -5,7 +5,7 @@ import (
 	"ewallet-wallet/internal/models"
 )
 
-//go:generate mockgen -source=i_wallet_repository.go -destination=../../services/wallet_mock_test.go -package=services
+//go:generate mockgen -source=i_wallet_repository.go -destination=../../services/service_mock_test.go -package=services
 type IWalletRepo interface {
 	CreateWallet(ctx context.Context, wallet *models.Wallet) error
 	UpdateBalance(ctx context.Context, userID uint64, amount float64) (models.Wallet, error)
