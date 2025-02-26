@@ -19,13 +19,13 @@ func (*Wallet) TableName() string {
 }
 
 type WalletTransaction struct {
-	ID                    int       `json:"-"`
+	ID                    int       `json:"id"`
 	WalletID              int       `json:"wallet_id" gorm:"column:wallet_id"`
 	Amount                float64   `json:"amount" gorm:"column:amount;type:decimal(15,2)"`
 	WalletTransactionType string    `json:"wallet_transaction_type" gorm:"column:wallet_transaction_type;type:enum('CREDIT', 'DEBIT')"`
 	Reference             string    `json:"reference" gorm:"column:reference;type:varchar(100);unique"`
-	CreatedAt             time.Time `json:"date"`
-	UpdatedAt             time.Time `json:"-"`
+	CreatedAt             time.Time `json:"created_at"`
+	UpdatedAt             time.Time `json:"updated_at"`
 }
 
 func (*WalletTransaction) TableName() string {

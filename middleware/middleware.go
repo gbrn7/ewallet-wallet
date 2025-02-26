@@ -1,4 +1,4 @@
-package cmd
+package middleware
 
 import (
 	"bytes"
@@ -7,6 +7,8 @@ import (
 	"encoding/hex"
 	"ewallet-wallet/constants"
 	"ewallet-wallet/helpers"
+	"ewallet-wallet/internal/handler/wallet"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -17,13 +19,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (d *Dependency) MiddlewareValidateToken(c *gin.Context) {
-	var (
-		log = helpers.Logger
-	)
+type ExternalDependency struct {
+	External wallet.External
+}
+
+func (d *ExternalDependency) MiddlewareValidateToken(c *gin.Context) {
+
 	auth := c.Request.Header.Get("Authorization")
 	if auth == "" {
-		log.Println("authorization empty")
+		fmt.Println("authorization empty")
 		helpers.SendResponseHTTP(c, http.StatusUnauthorized, "unauthorized", nil)
 		c.Abort()
 		return
@@ -31,7 +35,7 @@ func (d *Dependency) MiddlewareValidateToken(c *gin.Context) {
 
 	tokenData, err := d.External.ValidateToken(c.Request.Context(), auth)
 	if err != nil {
-		log.Error(err)
+		fmt.Printf("%v", err)
 		helpers.SendResponseHTTP(c, http.StatusUnauthorized, "unauthorized", nil)
 		c.Abort()
 
@@ -42,7 +46,8 @@ func (d *Dependency) MiddlewareValidateToken(c *gin.Context) {
 	c.Next()
 }
 
-func (d *Dependency) MiddlewareSignatureValidation(c *gin.Context) {
+func (d *ExternalDependency) MiddlewareSignatureValidation(c *gin.Context) {
+
 	clientID := c.Request.Header.Get("Client-id")
 	if clientID == "" {
 		log.Println("Client-id empty")
@@ -66,6 +71,7 @@ func (d *Dependency) MiddlewareSignatureValidation(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
 	requestTime, err := time.Parse(time.RFC3339, timestamp)
 	now := time.Now()
 

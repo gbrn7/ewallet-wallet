@@ -1,21 +1,17 @@
-package api
+package wallet
 
 import (
 	"ewallet-wallet/constants"
 	"ewallet-wallet/helpers"
-	"ewallet-wallet/internal/interfaces/i_service"
 	"ewallet-wallet/internal/models"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-type WalletAPI struct {
-	WalletService i_service.IWalletService
-}
-
-func (api *WalletAPI) Create(c *gin.Context) {
+func (h *Handler) Create(c *gin.Context) {
 	var (
 		log = helpers.Logger
 		req models.Wallet
@@ -33,37 +29,36 @@ func (api *WalletAPI) Create(c *gin.Context) {
 		return
 	}
 
-	err := api.WalletService.Create(c.Request.Context(), &req)
+	err := h.Service.Create(c.Request.Context(), &req)
 	if err != nil {
-		log.Error("failed to create wallet:", err)
+		fmt.Printf("failed to created wallet: %v\n", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrServerError, nil)
 		return
 	}
-
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, req)
 }
 
-func (api *WalletAPI) CreditBalance(c *gin.Context) {
+func (h *Handler) CreditBalance(c *gin.Context) {
 	var (
 		log = helpers.Logger
 		req models.TransactionRequest
 	)
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Error("failed to parse request, ", err)
+		fmt.Printf("failed to parse request, %v\n", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	if err := req.Validate(); err != nil {
-		log.Error("failed to validate request, ", err)
+		fmt.Printf("failed to validate request, %v\n", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	token, ok := c.Get("token")
 	if !ok {
-		log.Error("failed to get token data")
+		fmt.Println("failed to get token data")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -75,9 +70,10 @@ func (api *WalletAPI) CreditBalance(c *gin.Context) {
 		return
 	}
 
-	resp, err := api.WalletService.CreditBalance(c.Request.Context(), tokenData.UserID, req)
+	resp, err := h.Service.CreditBalance(c.Request.Context(), tokenData.UserID, req)
+
 	if err != nil {
-		log.Error("failed to debit balance of wallet:", err)
+		fmt.Printf("failed to debit balance of wallet: %v", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -85,41 +81,40 @@ func (api *WalletAPI) CreditBalance(c *gin.Context) {
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, resp)
 }
 
-func (api *WalletAPI) DebitBalance(c *gin.Context) {
+func (h *Handler) DebitBalance(c *gin.Context) {
 	var (
-		log = helpers.Logger
 		req models.TransactionRequest
 	)
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Error("failed to parse request, ", err)
+		fmt.Printf("failed to parse request, %v\n", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	if err := req.Validate(); err != nil {
-		log.Error("failed to validate request, ", err)
+		fmt.Printf("failed to validate request, %v\n", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	token, ok := c.Get("token")
 	if !ok {
-		log.Error("failed to get token data")
+		fmt.Println("failed to get token data")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
 
 	tokenData, ok := token.(models.TokenData)
 	if !ok {
-		log.Error("failed to parse token data")
+		fmt.Println("failed to parse token data")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
 
-	resp, err := api.WalletService.DebitBalance(c.Request.Context(), tokenData.UserID, req)
+	resp, err := h.Service.DebitBalance(c.Request.Context(), tokenData.UserID, req)
 	if err != nil {
-		log.Error("failed to debit of wallet, ", err)
+		fmt.Printf("failed to debit balance of wallet: %v", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -127,28 +122,25 @@ func (api *WalletAPI) DebitBalance(c *gin.Context) {
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, resp)
 }
 
-func (api *WalletAPI) GetBalance(c *gin.Context) {
-	var (
-		log = helpers.Logger
-	)
+func (h *Handler) GetBalance(c *gin.Context) {
 
 	token, ok := c.Get("token")
 	if !ok {
-		log.Error("failed to get token data")
+		fmt.Print("failed to get token data")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
 
 	tokenData, ok := token.(models.TokenData)
 	if !ok {
-		log.Error("failed to parse token data")
+		fmt.Print("failed to parse token data")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
 
-	resp, err := api.WalletService.GetBalance(c.Request.Context(), tokenData.UserID)
+	resp, err := h.Service.GetBalance(c.Request.Context(), tokenData.UserID)
 	if err != nil {
-		log.Error("failed to get balance of wallet, ", err)
+		fmt.Printf("failed to get balance of wallet, %v\n", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -156,21 +148,20 @@ func (api *WalletAPI) GetBalance(c *gin.Context) {
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, resp)
 }
 
-func (api *WalletAPI) GetWalletHistory(c *gin.Context) {
+func (h *Handler) GetWalletHistory(c *gin.Context) {
 	var (
-		log   = helpers.Logger
 		param models.WalletHistoryParam
 	)
 
 	if err := c.ShouldBindQuery(&param); err != nil {
-		log.Error("failed to get token data")
+		fmt.Println("failed to get token data")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	if param.WalletTransactionType != "" {
 		if param.WalletTransactionType != "CREDIT" && param.WalletTransactionType != "DEBIT" {
-			log.Error("invalid wallet transaction_type")
+			fmt.Println("invalid wallet transaction_type")
 			helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrFailedBadRequest, nil)
 			return
 		}
@@ -178,21 +169,21 @@ func (api *WalletAPI) GetWalletHistory(c *gin.Context) {
 
 	token, ok := c.Get("token")
 	if !ok {
-		log.Error("failed to get token data")
+		fmt.Println("failed to get token data")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
 
 	tokenData, ok := token.(models.TokenData)
 	if !ok {
-		log.Error("failed to parse token data")
+		fmt.Println("failed to parse token data")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
 
-	resp, err := api.WalletService.GetWalletHistory(c.Request.Context(), tokenData.UserID, param)
+	resp, err := h.Service.GetWalletHistory(c.Request.Context(), tokenData.UserID, param)
 	if err != nil {
-		log.Error("failed to get balance of wallet, ", err)
+		fmt.Printf("failed to get balance of wallet, %v\n", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -200,35 +191,37 @@ func (api *WalletAPI) GetWalletHistory(c *gin.Context) {
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, resp)
 }
 
-func (api *WalletAPI) CreateWalletLink(c *gin.Context) {
+func (h *Handler) CreateWalletLink(c *gin.Context) {
 	var (
-		log = helpers.Logger
 		req models.WalletLink
 	)
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Error("failed to parse query req: ", err)
+		fmt.Println("failed to parse query req: ", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	clientID, ok := c.Get("client_id")
 	if !ok {
-		log.Error("failed to get client id")
+		fmt.Println("fsdfsdf")
+		fmt.Println("fsdfsdf")
+		fmt.Println("fsdfsdf")
+		fmt.Println("failed to get client id")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
 
 	clientSource, ok := clientID.(string)
 	if !ok {
-		log.Error("failed to parse client id")
+		fmt.Println("failed to parse client id")
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
 
-	resp, err := api.WalletService.CreateWalletLink(c.Request.Context(), clientSource, &req)
+	resp, err := h.Service.CreateWalletLink(c.Request.Context(), clientSource, &req)
 	if err != nil {
-		log.Error("failed to create wallet link, ", err)
+		fmt.Println("failed to create wallet link, ", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -236,49 +229,49 @@ func (api *WalletAPI) CreateWalletLink(c *gin.Context) {
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, &resp)
 }
 
-func (api *WalletAPI) WalletLinkConfirmation(c *gin.Context) {
+func (h *Handler) WalletLinkConfirmation(c *gin.Context) {
 	var (
-		log = helpers.Logger
 		req *models.WalletLink
 	)
+	fmt.Println("fdfsf")
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Error("failed to parse query req: ", err)
+		fmt.Println("failed to parse query req: ", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	walletIDs := c.Param("wallet_id")
 	if walletIDs == "" {
-		log.Error("failed to get wallet id: ")
+		fmt.Println("failed to get wallet id: ")
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	walletID, err := strconv.Atoi(walletIDs)
 	if err != nil {
-		log.Error("failed to parse wallet id to int : ", err)
+		fmt.Println("failed to parse wallet id to int : ", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	clientID, ok := c.Get("client_id")
 	if !ok {
-		log.Error("failed to get client id")
+		fmt.Println("failed to get client id")
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrServerError, nil)
 		return
 	}
 
 	clientSource, ok := clientID.(string)
 	if !ok {
-		log.Error("failed to parse client id")
+		fmt.Println("failed to parse client id")
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrServerError, nil)
 		return
 	}
 
-	err = api.WalletService.WalletLinkConfirmation(c.Request.Context(), walletID, clientSource, req.OTP)
+	err = h.Service.WalletLinkConfirmation(c.Request.Context(), walletID, clientSource, req.OTP)
 	if err != nil {
-		log.Error("failed to confirm wallet link, ", err)
+		fmt.Println("failed to confirm wallet link, ", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -286,42 +279,39 @@ func (api *WalletAPI) WalletLinkConfirmation(c *gin.Context) {
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, nil)
 }
 
-func (api *WalletAPI) WalletUnlink(c *gin.Context) {
-	var (
-		log = helpers.Logger
-	)
+func (h *Handler) WalletUnlink(c *gin.Context) {
 
 	walletIDs := c.Param("wallet_id")
 	if walletIDs == "" {
-		log.Error("failed to get wallet id: ")
+		fmt.Println("failed to get wallet id: ")
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	walletID, err := strconv.Atoi(walletIDs)
 	if err != nil {
-		log.Error("failed to parse wallet id to int : ", err)
+		fmt.Println("failed to parse wallet id to int : ", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	clientID, ok := c.Get("client_id")
 	if !ok {
-		log.Error("failed to get client id")
+		fmt.Println("failed to get client id")
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrServerError, nil)
 		return
 	}
 
 	clientSource, ok := clientID.(string)
 	if !ok {
-		log.Error("failed to parse client id")
+		fmt.Println("failed to parse client id")
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrServerError, nil)
 		return
 	}
 
-	err = api.WalletService.WalletUnlink(c.Request.Context(), walletID, clientSource)
+	err = h.Service.WalletUnlink(c.Request.Context(), walletID, clientSource)
 	if err != nil {
-		log.Error("failed to unlink wallet: ", err)
+		fmt.Println("failed to unlink wallet: ", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -329,28 +319,25 @@ func (api *WalletAPI) WalletUnlink(c *gin.Context) {
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, nil)
 }
 
-func (api *WalletAPI) ExGetBalance(c *gin.Context) {
-	var (
-		log = helpers.Logger
-	)
+func (h *Handler) ExGetBalance(c *gin.Context) {
 
 	walletIDs := c.Param("wallet_id")
 	if walletIDs == "" {
-		log.Error("failed to get wallet id: ")
+		fmt.Println("failed to get wallet id: ")
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
 	walletID, err := strconv.Atoi(walletIDs)
 	if err != nil {
-		log.Error("failed to parse wallet id to int : ", err)
+		fmt.Println("failed to parse wallet id to int : ", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
-	resp, err := api.WalletService.ExGetBalance(c.Request.Context(), walletID)
+	resp, err := h.Service.ExGetBalance(c.Request.Context(), walletID)
 	if err != nil {
-		log.Error("failed to unlink wallet: ", err)
+		fmt.Println("failed to unlink wallet: ", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
@@ -358,21 +345,20 @@ func (api *WalletAPI) ExGetBalance(c *gin.Context) {
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, resp)
 }
 
-func (api *WalletAPI) ExternalTransaction(c *gin.Context) {
+func (h *Handler) ExternalTransaction(c *gin.Context) {
 	var (
-		log = helpers.Logger
 		req models.ExternalTransactionRequest
 	)
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Error("failed to parse query req: ", err)
+		fmt.Println("failed to parse query req: ", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrFailedBadRequest, nil)
 		return
 	}
 
-	resp, err := api.WalletService.ExternalTransaction(c.Request.Context(), req)
+	resp, err := h.Service.ExternalTransaction(c.Request.Context(), req)
 	if err != nil {
-		log.Error("failed to create external transaction, ", err)
+		fmt.Println("failed to create external transaction, ", err)
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
